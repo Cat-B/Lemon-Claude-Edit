@@ -42,18 +42,18 @@ const NORMAL_C = {
   splashColors: ['#FFE135','#F5A623','#ffc521','#FFF8C5'],
 };
 const PINK_C = {
-  bgHero:       '#FFFDE8',
+  bgHero:       '#FFF0F5',
   bgAbout:      '#FDE8F3',
-  bgProjects:   '#FFF8C5',
+  bgProjects:   '#FFF0F5',
   bgExperience: '#FDE0EC',
-  bgContact:    '#FFE566',
-  navBg:        'rgba(253,232,243,0.95)',
-  accent:       '#D4608A',
-  accentLt:     '#FADADD',
-  accentDark:   '#8B2252',
-  shadow:       'rgba(180,80,130,0.15)',
+  bgContact:    '#FFB3C8',
+  navBg:        'rgba(255,240,245,0.95)',
+  accent:       '#2D8A4E',
+  accentLt:     '#C5EDD4',
+  accentDark:   '#1A6635',
+  shadow:       'rgba(45,138,78,0.18)',
   pitcher:      ASSETS.pitcherPink,
-  splashColors: ['#FADADD','#D4608A','#FFE135','#8B2252'],
+  splashColors: ['#FF99BB','#D4608A','#C5EDD4','#1A6635'],
 };
 
 // ─── STATIC PALETTE ───────────────────────────────────────────────────────────
@@ -280,13 +280,13 @@ function CarouselCard({ p, width, height }: { p: ProjectItem; width: number; hei
         <div className="flex flex-wrap gap-1.5 overflow-hidden" style={{ maxHeight: '3.5rem' }}>
           {p.tech.slice(0, 3).map((tech, i) => (
             <span key={i} className="px-2 py-0.5 text-xs rounded-full whitespace-nowrap"
-              style={{ background: P.lemonPale, color: P.textDark }}>
+              style={{ background: P.lemonPale, color: P.textDark, border: `1px solid ${P.lemonBright}` }}>
               {tech}
             </span>
           ))}
           {p.tech.length > 3 && (
             <span className="px-2 py-0.5 text-xs rounded-full"
-              style={{ background: '#F0F9E0', color: P.textMid }}>
+              style={{ background: '#F0F9E0', color: P.textMid, border: `1px solid ${P.lemonBright}` }}>
               +{p.tech.length - 3}
             </span>
           )}
@@ -301,19 +301,25 @@ function CarouselCard({ p, width, height }: { p: ProjectItem; width: number; hei
 }
 
 // ─── FEATURED CAROUSEL ────────────────────────────────────────────────────────
+const DECO_H = 130; // height of decoration row above each card
+
 function FeaturedCarousel({ ids }: { ids: number[] }) {
   const allProjects = [...projectsData].sort((a, b) => b.id - a.id);
-  const [index, setIndex]         = useState(0);
-  const [isAnimating, setAnim]    = useState(false);
+  const [index, setIndex]           = useState(0);
+  const [direction, setDirection]   = useState<'left' | 'right' | null>(null);
+  const [animKey, setAnimKey]       = useState(0);
+  const [isAnimating, setAnim]      = useState(false);
   const [touchStart, setTouchStart] = useState(0);
 
-  const triggerNav = (fn: () => void) => {
+  const triggerNav = (fn: () => void, dir: 'left' | 'right') => {
     fn();
+    setDirection(dir);
+    setAnimKey(k => k + 1);
     setAnim(true);
-    setTimeout(() => setAnim(false), 450);
+    setTimeout(() => setAnim(false), 400);
   };
-  const prev = () => triggerNav(() => setIndex(i => (i - 1 + allProjects.length) % allProjects.length));
-  const next = () => triggerNav(() => setIndex(i => (i + 1) % allProjects.length));
+  const prev = () => triggerNav(() => setIndex(i => (i - 1 + allProjects.length) % allProjects.length), 'left');
+  const next = () => triggerNav(() => setIndex(i => (i + 1) % allProjects.length), 'right');
 
   const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX);
   const handleTouchEnd   = (e: React.TouchEvent) => {
@@ -325,77 +331,96 @@ function FeaturedCarousel({ ids }: { ids: number[] }) {
   const project = allProjects[index];
   const leftP   = allProjects[(index - 1 + allProjects.length) % allProjects.length];
   const rightP  = allProjects[(index + 1) % allProjects.length];
+  const slideAnim = direction === 'right' ? 'carousel-slide-right'
+                  : direction === 'left'  ? 'carousel-slide-left' : '';
 
   return (
     <div className="w-full py-4">
-      {/* ── Desktop juicer overlay (lg+) ── */}
-      <div className="hidden lg:flex items-end justify-center gap-4 px-4"
-        style={{ height: 120, marginBottom: -68, position: 'relative', zIndex: 5, pointerEvents: 'none' }}>
-        {/* left-arrow spacer */}
-        <div style={{ width: 52, flexShrink: 0 }} />
-        {/* above left tile: quarter lemon */}
-        <div style={{ width: CARD_W, flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', paddingBottom: 10 }}>
-          <img src={ASSETS.quarterLemon} alt="" style={{ width: 80, opacity: 0.92, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.18))' }} />
-        </div>
-        {/* above center tile: juicer + animated lemon — width matches visual tile */}
-        <div style={{ width: CARD_W, marginLeft: CENTER_MX, marginRight: CENTER_MX, flexShrink: 0,
-            display: 'flex', justifyContent: 'center', alignItems: 'flex-end', position: 'relative', height: 120 }}>
-          <img src={ASSETS.juicedLemon} alt=""
-            style={{ position: 'absolute', width: 68, left: '50%', transform: 'translateX(-50%)',
-              bottom: isAnimating ? -2 : 18, zIndex: 2,
-              transition: 'bottom 0.35s cubic-bezier(0.4,0,0.2,1)',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.12))' }} />
-          <img src={ASSETS.juicer} alt=""
-            style={{ position: 'absolute', width: Math.round(CARD_W * CENTER_SCALE), bottom: 0, left: '50%',
-              transform: 'translateX(-50%)', zIndex: 1,
-              filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.18))' }} />
-        </div>
-        {/* above right tile: quarter lemon */}
-        <div style={{ width: CARD_W, flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', paddingBottom: 10 }}>
-          <img src={ASSETS.quarterLemon} alt="" style={{ width: 80, opacity: 0.92, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.18))', transform: 'scaleX(-1)' }} />
-        </div>
-        {/* right-arrow spacer */}
-        <div style={{ width: 52, flexShrink: 0 }} />
-      </div>
-
-      {/* ── Desktop tiles (lg+) ── */}
-      <div className="hidden lg:flex items-center justify-center gap-4 px-4">
-        <button onClick={prev}
-          className={`flex-shrink-0 ${theme.cardBg} shadow-lg rounded-full p-3 border`}
-          style={{ borderColor: P.cardBorder, transition: 'background 0.2s' }}
+      {/* ── Desktop (lg+) ── */}
+      <div
+        className="hidden lg:block"
+        style={{
+          border: `2.5px solid ${P.lemonBright}`,
+          borderRadius: 24,
+          padding: '24px 64px 28px',
+          background: 'rgba(255,248,197,0.18)',
+          position: 'relative',
+        }}
+      >
+        {/* Nav buttons — vertically centered over the whole carousel */}
+        <button onClick={prev} aria-label="Previous"
+          className={`${theme.cardBg} shadow-lg rounded-full p-3 border`}
+          style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+            borderColor: P.cardBorder, zIndex: 10 }}
           onMouseEnter={e => (e.currentTarget.style.background = P.lemonPale)}
-          onMouseLeave={e => (e.currentTarget.style.background = P.cardBg)}
-          aria-label="Previous">
+          onMouseLeave={e => (e.currentTarget.style.background = P.cardBg)}>
           <ChevronLeft size={24} style={{ color: P.textMid }} />
         </button>
-
-        {([leftP, project, rightP] as ProjectItem[]).map((p, pos) => {
-          const isCenter = pos === 1;
-          return (
-            <div key={`${index}-${pos}`}
-              style={{
-                transform: isCenter ? `scale(${CENTER_SCALE})` : 'scale(1)',
-                transformOrigin: 'center center',
-                marginLeft:  isCenter ? CENTER_MX : 0,
-                marginRight: isCenter ? CENTER_MX : 0,
-                position: 'relative',
-                zIndex: isCenter ? 0 : 1,
-                flexShrink: 0,
-                transition: 'transform 0.4s cubic-bezier(0.4,0,0.2,1), margin 0.4s cubic-bezier(0.4,0,0.2,1)',
-              }}>
-              <CarouselCard p={p} width={CARD_W} height={CARD_H} />
-            </div>
-          );
-        })}
-
-        <button onClick={next}
-          className={`flex-shrink-0 ${theme.cardBg} shadow-lg rounded-full p-3 border`}
-          style={{ borderColor: P.cardBorder, transition: 'background 0.2s' }}
+        <button onClick={next} aria-label="Next"
+          className={`${theme.cardBg} shadow-lg rounded-full p-3 border`}
+          style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+            borderColor: P.cardBorder, zIndex: 10 }}
           onMouseEnter={e => (e.currentTarget.style.background = P.lemonPale)}
-          onMouseLeave={e => (e.currentTarget.style.background = P.cardBg)}
-          aria-label="Next">
+          onMouseLeave={e => (e.currentTarget.style.background = P.cardBg)}>
           <ChevronRight size={24} style={{ color: P.textMid }} />
         </button>
+
+        {/* Card columns — bottom-aligned so scaled center bottom matches side bottoms */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 16 }}>
+          {([leftP, project, rightP] as ProjectItem[]).map((p, pos) => {
+            const isCenter = pos === 1;
+            return (
+              <div key={`${animKey}-${pos}`}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  transform: isCenter ? `scale(${CENTER_SCALE})` : 'scale(1)',
+                  transformOrigin: 'bottom center',
+                  marginLeft:  isCenter ? CENTER_MX : 0,
+                  marginRight: isCenter ? CENTER_MX : 0,
+                  flexShrink: 0,
+                  zIndex: isCenter ? 2 : 1,
+                  position: 'relative',
+                  transition: 'transform 0.4s cubic-bezier(0.4,0,0.2,1)',
+                }}>
+                {/* Decoration row — same height for all positions */}
+                <div style={{ width: CARD_W, height: DECO_H, position: 'relative', flexShrink: 0 }}>
+                  {isCenter ? (
+                    <>
+                      <img src={ASSETS.juicedLemon} alt=""
+                        style={{
+                          position: 'absolute', width: 62,
+                          left: '50%', transform: 'translateX(-50%)',
+                          bottom: isAnimating ? '4%' : '22%',
+                          zIndex: 2,
+                          transition: 'bottom 0.32s cubic-bezier(0.4,0,0.2,1)',
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.12))',
+                        }} />
+                      <img src={ASSETS.juicer} alt=""
+                        style={{
+                          position: 'absolute', bottom: 0, left: 0,
+                          width: CARD_W, zIndex: 1,
+                          filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.18))',
+                        }} />
+                    </>
+                  ) : (
+                    <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)' }}>
+                      <img src={ASSETS.quarterLemon} alt=""
+                        style={{
+                          width: 72, opacity: 0.9,
+                          filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.18))',
+                          transform: pos === 2 ? 'scaleX(-1)' : 'none',
+                        }} />
+                    </div>
+                  )}
+                </div>
+                {/* Card with slide animation */}
+                <div className={slideAnim} style={{ flexShrink: 0 }}>
+                  <CarouselCard p={p} width={CARD_W} height={CARD_H} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Mobile single tile (<lg) ── */}
@@ -432,8 +457,8 @@ function ProjectsGallery() {
     <div style={{ minHeight: '100vh', background: P.lemonCream }}>
       <header style={{ background: P.cardBg, borderBottom: `2px dashed ${P.lemonBright}`, padding: '14px 32px' }}>
         <button onClick={() => navigate('/')}
-          className="flex items-center gap-2 btn-lift"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: P.textMid, fontFamily: P.fBody }}>
+          className="inline-flex items-center gap-2 btn-lift"
+          style={{ background: P.lemonBright, border: `2px solid ${P.lemonRind}`, borderRadius: 999, padding: '8px 20px', fontWeight: 600, cursor: 'pointer', color: P.textDark, fontFamily: P.fBody, fontSize: '0.9rem' }}>
           <ArrowLeft size={18} /> Back to Portfolio
         </button>
       </header>
@@ -456,7 +481,7 @@ function ProjectsGallery() {
                 <p className="text-sm leading-relaxed mb-3" style={{ color: P.textMid }}>{project.shortDescription}</p>
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {project.tech.slice(0, 3).map((t, i) => (
-                    <span key={i} className="px-2 py-0.5 text-xs rounded-full" style={{ background: P.lemonPale, color: P.textDark }}>{t}</span>
+                    <span key={i} className="px-2 py-0.5 text-xs rounded-full" style={{ background: P.lemonPale, color: P.textDark, border: `1px solid ${P.lemonBright}` }}>{t}</span>
                   ))}
                 </div>
                 <div className="flex items-center text-sm" style={{ color: P.lemonRind }}>
@@ -518,7 +543,7 @@ function ProjectDetail() {
           className="btn-lift"
           style={{ position: 'relative', zIndex: 2,
             background: P.lemonBright,
-            border: `2px dashed ${P.lemonRind}`, borderRadius: 999,
+            border: `2px solid ${P.lemonRind}`, borderRadius: 999,
             padding: '8px 22px', fontWeight: 600, cursor: 'pointer',
             fontSize: '0.9rem', marginBottom: 20, display: 'inline-flex',
             alignItems: 'center', gap: 7, fontFamily: P.fBody, color: P.textDark }}>
@@ -1012,7 +1037,7 @@ function Portfolio() {
 
           <FeaturedCarousel ids={[40, 35, 25]} />
 
-          <div className="text-center mt-10">
+          <div className="text-center mt-10" style={{ position: 'relative', zIndex: 10 }}>
             <Link to="/projects" className="btn-lift inline-flex items-center gap-2"
               style={{ padding: '12px 28px', borderRadius: 999, fontWeight: 600,
                 background: c.accentDark, color: 'white', textDecoration: 'none',
@@ -1156,7 +1181,7 @@ function Portfolio() {
               <a key={card.label} href={card.href} target={card.href.startsWith('mailto') ? undefined : '_blank'}
                 rel="noopener noreferrer"
                 className="btn-lift flex flex-col items-center p-5 rounded-2xl"
-                style={{ background: P.cardBg, border: `2px dashed ${P.lemonRind}`,
+                style={{ background: P.cardBg, border: `2px solid ${P.lemonBright}`,
                   textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 <span style={{ color: c.accentDark, marginBottom: 8, transition: 'color 0.4s' }}>{card.icon}</span>
                 <p style={{ fontWeight: 600, color: P.textDark, marginBottom: 3 }}>{card.label}</p>
@@ -1168,12 +1193,12 @@ function Portfolio() {
       </section>
 
       {/* ════════════════ FOOTER ════════════════ */}
-      <footer style={{ background: '#1e3a0a', padding: '24px 32px', textAlign: 'center' }}>
-        <p style={{ color: '#fffab0', fontSize: '0.9rem', marginBottom: 4 }}>
-          Hand-stirred by Catherine Boss · {new Date().getFullYear()}
+      <footer style={{ background: '#1e3a0a', padding: '14px 32px', textAlign: 'center' }}>
+        <p style={{ color: '#fffab0', fontSize: '0.85rem', marginBottom: 3 }}>
+          © {new Date().getFullYear()} Catherine Boss · All rights reserved
         </p>
-        <p style={{ color: 'rgba(255,250,176,0.5)', fontSize: '0.78rem' }}>
-          Built from scratch with TypeScript &amp; React
+        <p style={{ color: 'rgba(255,250,176,0.5)', fontSize: '0.75rem' }}>
+          All assets and illustrations created by Catherine Boss in Procreate
         </p>
       </footer>
     </div>
@@ -1202,9 +1227,9 @@ function App() {
       const style = document.createElement('style');
       style.id = 'lemon-global';
       style.textContent = `
-        html { overflow-x: hidden; }
+        html { overflow-x: clip; }
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'DM Sans', 'Helvetica Neue', sans-serif; margin: 0; overflow-x: hidden; }
+        body { font-family: 'DM Sans', 'Helvetica Neue', sans-serif; margin: 0; overflow-x: clip; }
         @keyframes blobWobble {
           0%   { border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%; }
           50%  { border-radius: 40% 60% 40% 60% / 60% 40% 60% 40%; }
@@ -1238,9 +1263,9 @@ function App() {
           box-shadow: 5px 5px 0 #7A4E18;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .board-card:nth-child(1) { background: #C8903E; }
-        .board-card:nth-child(2) { background: #B87E30; }
-        .board-card:nth-child(3) { background: #D4A060; }
+        .board-card:nth-child(2) { background: #C8903E; }
+        .board-card:nth-child(3) { background: #B87E30; }
+        .board-card:nth-child(4) { background: #D4A060; }
         .board-card::before {
           content: ''; position: absolute; inset: 6px;
           border: 2px dashed rgba(255,255,255,0.32); border-radius: 10px;
@@ -1250,8 +1275,8 @@ function App() {
         .board-card > img.board-lemon-img { position: absolute !important; z-index: 2; }
         .board-card:hover { transform: translateY(-3px); box-shadow: 7px 7px 0 #7A4E18; }
         @media (max-width: 1023px) {
-          .board-card { padding: 18px 22px !important; }
-          .board-lemon-img { display: none !important; }
+          .board-card { padding: 18px 100px 18px 22px !important; }
+          .board-lemon-img { height: 88% !important; width: auto !important; right: -4px !important; opacity: 0.8 !important; }
         }
         /* ── Hero buttons ── */
         .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -1264,13 +1289,14 @@ function App() {
         .btn-lift:active { transform: translateY(0); }
         .detail-link {
           display: inline-flex; align-items: center; gap: 8px;
-          padding: 9px 20px; background: #FFE135;
-          border: 2.5px solid #2B2B1F; border-radius: 6px;
-          box-shadow: 3px 3px 0 #2B2B1F; font-weight: 600; font-size: 0.9rem;
+          padding: 9px 22px; background: #FFE135;
+          border: 2px solid #B89A00; border-radius: 999px;
+          font-weight: 600; font-size: 0.9rem;
           text-decoration: none; color: #2B2B1F; cursor: pointer;
-          transition: box-shadow 0.15s, transform 0.15s;
+          box-shadow: 0 4px 12px rgba(180,150,0,0.2);
+          transition: box-shadow 0.2s, transform 0.2s;
         }
-        .detail-link:hover { box-shadow: 5px 5px 0 #2B2B1F; transform: translate(-1px,-1px); }
+        .detail-link:hover { box-shadow: 0 6px 18px rgba(180,150,0,0.3); transform: translateY(-2px); }
         .detail-section-heading {
           display: flex; align-items: center; gap: 10px;
           font-family: 'Fraunces', Georgia, serif;
@@ -1280,6 +1306,16 @@ function App() {
           content: ''; flex: 1; height: 2px;
           background: linear-gradient(90deg, #FFE135, transparent); border-radius: 2px;
         }
+        @keyframes carouselSlideRight {
+          from { opacity: 0.55; transform: translateX(28px); }
+          to   { opacity: 1;    transform: translateX(0); }
+        }
+        @keyframes carouselSlideLeft {
+          from { opacity: 0.55; transform: translateX(-28px); }
+          to   { opacity: 1;    transform: translateX(0); }
+        }
+        .carousel-slide-right { animation: carouselSlideRight 0.35s ease-out; }
+        .carousel-slide-left  { animation: carouselSlideLeft  0.35s ease-out; }
       `;
       document.head.appendChild(style);
     }
