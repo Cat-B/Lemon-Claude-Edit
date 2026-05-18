@@ -1308,12 +1308,12 @@ function App() {
           box-shadow: 5px 5px 0 #7A4E18;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .board-card:nth-child(2) { background: #C8903E; }
-        .board-card:nth-child(3) { background: #B87E30; }
-        .board-card:nth-child(4) { background: #9A5F18; }
+        .board-card:nth-child(2) { background: #966c3b; }
+        .board-card:nth-child(3) { background: #cca26a; }
+        .board-card:nth-child(4) { background: #a87a4a; }
         .board-card::before {
           content: ''; position: absolute; inset: 6px;
-          border: 2px dashed rgba(255,255,255,0.32); border-radius: 10px;
+          border: 1px dashed rgba(255,255,255,0.32); border-radius: 10px;
           pointer-events: none; z-index: 0;
         }
         .board-card > * { position: relative; z-index: 1; }
