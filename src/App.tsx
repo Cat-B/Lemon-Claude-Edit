@@ -28,7 +28,7 @@ const STIR_FRAMES = [ASSETS.stir1, ASSETS.stir2, ASSETS.stir3];
 
 // ─── COLOUR SCHEMES (yellow ↔ pink lemonade) ──────────────────────────────────
 const NORMAL_C = {
-  bgHero:       '#FFFBD0',
+  bgHero:       '#fffde4',
   bgAbout:      '#E6F7C4',
   bgProjects:   '#FFF290',
   bgExperience: '#E0F0BC',
@@ -74,7 +74,7 @@ const P = {
 
 // ─── STATIC THEME (for sub-components that don't receive pinkMode) ────────────
 const theme = {
-  headingDark:       'text-[#2B2B1F]',
+  headingDark:       'text-[#000000]',
   bodyText:          'text-[#5A5A3A]',
   bodyTextDark:      'text-[#2B2B1F]',
   mutedText:         'text-[#888870]',
