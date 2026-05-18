@@ -259,7 +259,7 @@ function WaveDivider({ bg, fill, variant = 0 }: { bg: string; fill: string; vari
 const CARD_W       = 260;
 const MOBILE_W     = 340;
 const CARD_H       = 460;
-const CENTER_SCALE = 1.25;
+const CENTER_SCALE = 1.15;
 const CENTER_MX    = Math.ceil((CARD_W * (CENTER_SCALE - 1)) / 2) + 6;
 const MOBILE_IMG_H = Math.round(MOBILE_W * 9 / 16);
 
