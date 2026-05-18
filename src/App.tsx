@@ -28,16 +28,16 @@ const STIR_FRAMES = [ASSETS.stir1, ASSETS.stir2, ASSETS.stir3];
 
 // ─── COLOUR SCHEMES (yellow ↔ pink lemonade) ──────────────────────────────────
 const NORMAL_C = {
-  bgHero:       '#FFFDE8',
-  bgAbout:      '#F0F9E0',
-  bgProjects:   '#FFF8C5',
-  bgExperience: '#EBF5DC',
-  bgContact:    '#FFE566',
-  navBg:        'rgba(255,253,232,0.95)',
-  accent:       '#7DAF30',
-  accentLt:     '#D4ECA0',
-  accentDark:   '#4A7015',
-  shadow:       'rgba(180,150,0,0.18)',
+  bgHero:       '#FFFBD0',
+  bgAbout:      '#E6F7C4',
+  bgProjects:   '#FFF290',
+  bgExperience: '#E0F0BC',
+  bgContact:    '#FFE022',
+  navBg:        'rgba(255,251,208,0.97)',
+  accent:       '#6DB820',
+  accentLt:     '#CDEF80',
+  accentDark:   '#3A6E0A',
+  shadow:       'rgba(90,140,0,0.22)',
   pitcher:      ASSETS.pitcher,
   splashColors: ['#FFE135','#F5A623','#ffc521','#FFF8C5'],
 };
@@ -62,12 +62,12 @@ const P = {
   lemonPale:   '#FFF8C5',
   lemonCream:  '#FFFDE8',
   lemonZest:   '#F5A623',
-  lemonRind:   '#B89A00',
-  textDark:    '#2B2B1F',
-  textMid:     '#5A5A3A',
-  textLight:   '#888870',
+  lemonRind:   '#9A7E00',
+  textDark:    '#1A1A0A',
+  textMid:     '#3A3A18',
+  textLight:   '#666640',
   cardBg:      '#FEFDF5',
-  cardBorder:  '#E6DDB8',
+  cardBorder:  '#D8C840',
   fDisplay:    "'Fraunces', Georgia, serif" as string,
   fBody:       "'DM Sans', 'Helvetica Neue', sans-serif" as string,
 };
@@ -270,7 +270,7 @@ function CarouselCard({ p, width, height }: { p: ProjectItem; width: number; hei
     <Link
       to={`/project/${p.id}`}
       className={`${theme.cardBg} rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer flex flex-col`}
-      style={{ width, height, flexShrink: 0, border: `2px solid ${P.lemonBright}` }}
+      style={{ width, height, flexShrink: 0, border: `3px solid ${P.lemonBright}` }}
     >
       <img src={p.image} alt={p.title} className="w-full aspect-video object-cover flex-shrink-0" />
       <div className="p-4 flex flex-col flex-1 overflow-hidden">
@@ -303,12 +303,6 @@ function CarouselCard({ p, width, height }: { p: ProjectItem; width: number; hei
 // ─── FEATURED CAROUSEL ────────────────────────────────────────────────────────
 const DECO_H = 150;
 
-// Pre-computed splash offsets — deterministic, no Math.random in render
-const SPLASH_RING = Array.from({ length: 8 }, (_, i) => {
-  const a = (i / 8) * Math.PI * 2;
-  return { dx: Math.cos(a) * 38, dy: Math.sin(a) * 38 - 8 };
-});
-
 function FeaturedCarousel(_props: Record<string, never> | { ids?: number[] }) {
   const real = [...projectsData].sort((a, b) => b.id - a.id);
   const n    = real.length;
@@ -322,18 +316,17 @@ function FeaturedCarousel(_props: Record<string, never> | { ids?: number[] }) {
     ...real.slice(0, N_CLONES),
   ];
 
-  const [trackIdx,  setTrackIdx]  = useState(N_CLONES); // start centered on first real card
-  const [noTransit, setNoTransit] = useState(false);    // disables transition during wrap-jump
-  const [squeezing, setSqueezing] = useState(false);    // lemon presses down
-  const [splashKey, setSplashKey] = useState(0);        // increments to re-trigger splash
+  const [trackIdx,  setTrackIdx]  = useState(N_CLONES);
+  const [noTransit, setNoTransit] = useState(false);
+  const [squeezing, setSqueezing] = useState(false);
   const [touchPos,  setTouchPos]  = useState<{ x: number; y: number } | null>(null);
+  const lastWheelTime = useRef(0);
 
   const translateX = -(trackIdx - 1) * SLOT;
 
   const navigate = (dir: 1 | -1) => {
     setTrackIdx(i => i + dir);
     setSqueezing(true);
-    setSplashKey(k => k + 1);
     setTimeout(() => setSqueezing(false), 480);
   };
   const prev = () => navigate(-1);
@@ -366,7 +359,16 @@ function FeaturedCarousel(_props: Record<string, never> | { ids?: number[] }) {
     setTouchPos(null);
   };
 
-  const BTN_SPACE = 56; // button width + gap space on each side
+  const BTN_SPACE = 56;
+
+  const onWheelDesktop = (e: React.WheelEvent) => {
+    const now = Date.now();
+    if (now - lastWheelTime.current < 700) return;
+    if (Math.abs(e.deltaX) > 35) {
+      lastWheelTime.current = now;
+      if (e.deltaX > 0) next(); else prev();
+    }
+  };
 
   return (
     <div className="w-full py-4">
@@ -377,24 +379,12 @@ function FeaturedCarousel(_props: Record<string, never> | { ids?: number[] }) {
           <div style={{ width: BTN_SPACE, flexShrink: 0 }} />
           <div style={{ width: visW, height: DECO_H, position: 'relative', flexShrink: 0 }}>
             {/* Left quarter lemon */}
-            <div style={{ position: 'absolute', bottom: 8, left: CAROUSEL_CARD_W / 2, transform: 'translateX(-50%)' }}>
+            <div style={{ position: 'absolute', bottom: 0, left: CAROUSEL_CARD_W / 2, transform: 'translateX(-50%)' }}>
               <img src={ASSETS.quarterLemon} alt=""
-                style={{ width: 72, opacity: 0.9, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.18))' }} />
+                style={{ width: Math.round(CAROUSEL_CARD_W * 0.72), filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.22))' }} />
             </div>
             {/* Center juicer area */}
             <div style={{ position: 'absolute', bottom: 0, left: CAROUSEL_CARD_W + CAROUSEL_GAP, width: CAROUSEL_CARD_W }}>
-              {/* Juice splash drops — remount via key to restart animation */}
-              {SPLASH_RING.map((off, i) => (
-                <div key={`${splashKey}-${i}`} style={{
-                  position: 'absolute', bottom: '62%', left: '50%',
-                  width: 9, height: 9, borderRadius: '50%',
-                  background: i % 2 === 0 ? P.lemonBright : P.lemonZest,
-                  pointerEvents: 'none',
-                  ['--jdx' as any]: `${off.dx}px`,
-                  ['--jdy' as any]: `${off.dy}px`,
-                  animation: splashKey > 0 ? `juiceOut 0.55s ease-out ${i * 0.03}s forwards` : 'none',
-                }} />
-              ))}
               {/* Juiced lemon — same width as juicer, presses down when squeezing */}
               <img src={ASSETS.juicedLemon} alt="" style={{
                 position: 'absolute', width: CAROUSEL_CARD_W, left: 0,
@@ -410,9 +400,9 @@ function FeaturedCarousel(_props: Record<string, never> | { ids?: number[] }) {
               }} />
             </div>
             {/* Right quarter lemon */}
-            <div style={{ position: 'absolute', bottom: 8, right: CAROUSEL_CARD_W / 2, transform: 'translateX(50%)' }}>
+            <div style={{ position: 'absolute', bottom: 0, right: CAROUSEL_CARD_W / 2, transform: 'translateX(50%)' }}>
               <img src={ASSETS.quarterLemon} alt=""
-                style={{ width: 72, opacity: 0.9, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.18))', transform: 'scaleX(-1)' }} />
+                style={{ width: Math.round(CAROUSEL_CARD_W * 0.72), filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.22))', transform: 'scaleX(-1)' }} />
             </div>
           </div>
           <div style={{ width: BTN_SPACE, flexShrink: 0 }} />
@@ -428,7 +418,7 @@ function FeaturedCarousel(_props: Record<string, never> | { ids?: number[] }) {
             <ChevronLeft size={24} style={{ color: P.textMid }} />
           </button>
           {/* Clip window — hides cards outside the 3-card view */}
-          <div style={{ width: visW, overflow: 'hidden', flexShrink: 0 }}>
+          <div style={{ width: visW, overflow: 'hidden', flexShrink: 0 }} onWheel={onWheelDesktop}>
             <div
               style={{
                 display: 'flex', gap: CAROUSEL_GAP,
@@ -458,17 +448,17 @@ function FeaturedCarousel(_props: Record<string, never> | { ids?: number[] }) {
       {/* ── Mobile (<lg) ── */}
       <div className="lg:hidden" style={{ touchAction: 'pan-x' }}
         onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        {/* Mobile juicer */}
-        <div style={{ position: 'relative', height: 100, width: MOBILE_W, margin: '0 auto' }}>
+        {/* Mobile juicer — narrower so it doesn't overflow into section heading */}
+        <div style={{ position: 'relative', height: 110, width: MOBILE_W, margin: '0 auto' }}>
           <img src={ASSETS.juicedLemon} alt="" style={{
-            position: 'absolute', width: MOBILE_W, left: 0,
+            position: 'absolute', width: 200, left: '50%', transform: 'translateX(-50%)',
             bottom: squeezing ? '6%' : '26%', zIndex: 2,
             transition: 'bottom 0.3s cubic-bezier(0.4,0,0.2,1)',
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.12))',
           }} />
           <img src={ASSETS.juicer} alt="" style={{
-            position: 'absolute', bottom: 0, left: 0,
-            width: MOBILE_W, zIndex: 1,
+            position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+            width: 200, zIndex: 1,
             filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.18))',
           }} />
         </div>
@@ -518,7 +508,7 @@ function ProjectsGallery() {
           {sorted.map(project => (
             <Link key={project.id} to={`/project/${project.id}`}
               className="rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 block"
-              style={{ background: P.cardBg, border: `1.5px solid ${P.cardBorder}` }}>
+              style={{ background: P.cardBg, border: `2px solid ${P.lemonBright}` }}>
               <img src={project.image} alt={project.title} className="w-full h-44 object-cover" />
               <div className="p-5">
                 <h3 style={{ fontFamily: P.fDisplay, fontWeight: 700, color: P.textDark, marginBottom: 4 }}>{project.title}</h3>
@@ -1005,7 +995,7 @@ function Portfolio() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
                   {['SolidWorks / CAD','3D Printing','Mechatronics','Hands-On Solving'].map(s => (
                     <span key={s} className="skill-chip"
-                      style={{ background: c.accentLt, color: P.textDark, transition: 'background 0.4s' }}>
+                      style={{ background: c.accentLt, color: P.textDark, border: `1.5px solid ${c.accentDark}`, transition: 'background 0.4s' }}>
                       {s}
                     </span>
                   ))}
@@ -1015,7 +1005,7 @@ function Portfolio() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {['Organized','Energetic','Curious','Communicative'].map(s => (
                     <span key={s} className="skill-chip"
-                      style={{ background: c.accentLt, color: P.textDark, transition: 'background 0.4s' }}>
+                      style={{ background: c.accentLt, color: P.textDark, border: `1.5px solid ${c.accentDark}`, transition: 'background 0.4s' }}>
                       {s}
                     </span>
                   ))}
@@ -1030,10 +1020,10 @@ function Portfolio() {
                 — a few fresh facts —
               </p>
               {funFacts.map((fact, i) => (
-                <div key={i} className="board-card" style={{ padding: '20px 90px 20px 20px', minHeight: 100 }}>
+                <div key={i} className="board-card" style={{ padding: '20px 150px 20px 22px', minHeight: 100 }}>
                   <img src={fact.img} alt="" className="board-lemon-img" style={{
-                    position: 'absolute', right: -6, bottom: 0,
-                    height: '115%', width: 'auto', objectFit: 'contain',
+                    position: 'absolute', right: -4, bottom: 0,
+                    height: '100%', width: 'auto', objectFit: 'contain',
                     pointerEvents: 'none',
                   }} />
                   <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em',
@@ -1140,7 +1130,7 @@ function Portfolio() {
                 </div>
 
                 <div className="timeline-card" style={{
-                  background: P.cardBg, border: `2px solid ${c.accentLt}`,
+                  background: P.cardBg, border: `2px solid ${P.lemonBright}`,
                   borderRadius: 14, padding: '18px 22px',
                   transition: 'background 0.4s, border-color 0.2s, transform 0.2s',
                 }}>
@@ -1173,7 +1163,7 @@ function Portfolio() {
           <div className="lg:hidden space-y-4">
             {experienceData.map(exp => (
               <div key={exp.id} style={{ background: P.cardBg, borderRadius: 14,
-                padding: '18px 20px', border: `1.5px solid ${P.cardBorder}`,
+                padding: '18px 20px', border: `2px solid ${P.lemonBright}`,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 <h3 style={{ fontFamily: P.fDisplay, fontSize: '1.05rem', fontWeight: 700,
                   color: P.textDark, marginBottom: 4 }}>{exp.title}</h3>
@@ -1332,8 +1322,8 @@ function App() {
         .board-card > img.board-lemon-img { position: absolute !important; z-index: 2; }
         .board-card:hover { transform: translateY(-3px); box-shadow: 7px 7px 0 #7A4E18; }
         @media (max-width: 1023px) {
-          .board-card { padding: 18px 100px 18px 22px !important; }
-          .board-lemon-img { height: 88% !important; width: auto !important; right: -4px !important; opacity: 0.8 !important; }
+          .board-card { padding: 18px 150px 18px 22px !important; }
+          .board-lemon-img { height: 92% !important; width: auto !important; right: -4px !important; }
         }
         /* ── Hero buttons ── */
         .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
