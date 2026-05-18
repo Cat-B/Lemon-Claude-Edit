@@ -74,7 +74,7 @@ const P = {
 
 // ─── STATIC THEME (for sub-components that don't receive pinkMode) ────────────
 const theme = {
-  headingDark:       'text-[#000000]',
+  headingDark:       'text-[#ff0098]',
   bodyText:          'text-[#5A5A3A]',
   bodyTextDark:      'text-[#2B2B1F]',
   mutedText:         'text-[#888870]',
