@@ -63,7 +63,7 @@ const P = {
   lemonCream:  '#FFFDE8',
   lemonZest:   '#F5A623',
   lemonRind:   '#9A7E00',
-  textDark:    '#1A1A0A',
+  textDark:    '#000000',
   textMid:     '#3A3A18',
   textLight:   '#666640',
   cardBg:      '#FEFDF5',
