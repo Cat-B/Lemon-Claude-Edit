@@ -28,12 +28,12 @@ const STIR_FRAMES = [ASSETS.stir1, ASSETS.stir2, ASSETS.stir3];
 
 // ─── COLOUR SCHEMES (yellow ↔ pink lemonade) ──────────────────────────────────
 const NORMAL_C = {
-  bgHero:       '#fffde4',
-  bgAbout:      '#E6F7C4',
-  bgProjects:   '#FFF290',
-  bgExperience: '#E0F0BC',
-  bgContact:    '#FFE022',
-  navBg:        'rgba(255,251,208,0.97)',
+  bgHero:       '#fffdf1',
+  bgAbout:      '#f3fae6',
+  bgProjects:   '#fefbe2',
+  bgExperience: '#eff7db',
+  bgContact:    '#fff290',
+  navBg:        '#fffdf1',
   accent:       '#6DB820',
   accentLt:     '#CDEF80',
   accentDark:   '#3A6E0A',
