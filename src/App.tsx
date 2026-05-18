@@ -256,12 +256,12 @@ function WaveDivider({ bg, fill, variant = 0 }: { bg: string; fill: string; vari
 }
 
 // ─── CAROUSEL CARD ────────────────────────────────────────────────────────────
-const CARD_W       = 260;
-const MOBILE_W     = 340;
-const CARD_H       = 460;
-const CENTER_SCALE = 1.15;
-const CENTER_MX    = Math.ceil((CARD_W * (CENTER_SCALE - 1)) / 2) + 6;
-const MOBILE_IMG_H = Math.round(MOBILE_W * 9 / 16);
+const CAROUSEL_CARD_W = 340;
+const CAROUSEL_CARD_H = 500;
+const CAROUSEL_GAP    = 28;
+const N_CLONES        = 3;
+const MOBILE_W        = 340;
+const MOBILE_IMG_H    = Math.round(MOBILE_W * 9 / 16);
 
 type ProjectItem = (typeof projectsData)[0];
 
